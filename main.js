@@ -1,37 +1,64 @@
-// Wait for the DOM to be fully loaded before manipulating it
-document.addEventListener("DOMContentLoaded", function () {
-    // Get the elements by their class names or IDs
-    var temperatureElement = document.querySelector(".degreecelsius");
-    var weatherTypeElement = document.querySelector(".sunny");
-    var precipitationElement = document.getElementById("weathertype1");
-    var humidityElement = document.getElementById("weathertype2");
-    var windElement = document.getElementById("weathertype3");
-    var locationInput = document.querySelector(".locationbutton");
+// Get the elements
+const locationInput = document.querySelector('.locationbutton1');
+const findButton = document.querySelector('.locationbutton2');
+const dayOfWeek = document.querySelector('.dayofweek');
+const dateElement = document.querySelector('.date');
+const locationElement = document.querySelector('.location');
+const weatherIcon = document.querySelector('.imgicon');
+const temperatureElement = document.querySelector('.degreecelsius');
+const weatherDescription = document.querySelector('.sunny');
 
-    // OpenWeatherMap API endpoint and API key
-    var apiKey = "YOUR_API_KEY";
+// OpenWeatherMap API endpoint and your API key
+const apiKey = '9c02ef314b76977899fff3664f641e19';
+const apiUrl = 'https://api.openweathermap.org/data/2.5/weather';
 
-    // Event listener for the button click
-    document.querySelector(".locationbutton").addEventListener("click", function () {
-        var location = locationInput.value;
-        if (location.trim() === "") {
-            return;
-        }
-        var apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=" + location + "&units=metric&appid=" + apiKey;
-
-        // Fetch weather data from the API
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(data => {
-                // Update the content of identified elements with real-time data
-                temperatureElement.textContent = data.main.temp + "°C";
-                weatherTypeElement.textContent = data.weather[0].description;
-                precipitationElement.querySelector(".wtv").textContent = data.clouds.all + "%";
-                humidityElement.querySelector(".wtv").textContent = data.main.humidity + "%";
-                windElement.querySelector(".wtv").textContent = data.wind.speed + " Km/h";
-            })
-            .catch(error => {
-                console.error("Error fetching weather data: ", error);
-            });
-    });
+// Event listener for the Find button
+findButton.addEventListener('click', () => {
+    const location = locationInput.value;
+    // Call the getWeather function with the location as a parameter
+    getWeather(location);
 });
+
+// Function to get weather data from OpenWeatherMap API
+async function getWeather(location) {
+    
+    try {
+        // Fetch data from the API
+        const response = await fetch(`${apiUrl}?q=${location}&units=metric&appid=${apiKey}`);
+        const data = await response.json();
+
+        // Update the UI with the fetched data
+        dayOfWeek.textContent = getDayOfWeek();
+        dateElement.textContent = getCurrentDate();
+        locationElement.textContent = `${location}, ${data.sys.country}`;
+        weatherIcon.src = `./Weathericons/${getWeatherIcon(data.weather[0].icon)}.png`;
+        temperatureElement.textContent = `${Math.round(data.main.temp)}°C`;
+        weatherDescription.textContent = data.weather[0].description;
+    } catch (error) {
+        // Handle errors, for example, display an error message to the user
+        console.error('Error fetching weather data:', error);
+    }
+}
+
+// Function to get the current day of the week
+function getDayOfWeek() {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const today = new Date();
+    return days[today.getDay()];
+}
+
+// Function to get the current date in the format: DD MM YYYY
+function getCurrentDate() {
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+    const year = today.getFullYear();
+    return `${day} ${month} ${year}`;
+}
+
+// Function to map weather icons from OpenWeatherMap to your local icons
+function getWeatherIcon(iconCode) {
+    // Add your mapping logic here based on OpenWeatherMap icon codes
+    // For example, if(iconCode === '01d') return 'sunny-logo';
+    // You need to map different icon codes to your local icons
+}
